@@ -10,7 +10,7 @@ using namespace TimeCounters;
 
 using namespace std;
 
-#define dMAX_TIME 20 * 60
+#define dMAX_TIME  60
 
 
 void vRunExperiment(CEvaluator &cConfiguredEvaluator)
@@ -108,21 +108,21 @@ void main(int iArgCount, char **ppcArgValues)
 	random_device c_mask_seed_generator;
 	int i_mask_seed = (int)c_mask_seed_generator();
 
-	vRunIsingSpinGlassExperiment(81, 0, i_mask_seed);
-	vRunIsingSpinGlassExperiment(81, 0, iSEED_NO_MASK);
+	//vRunIsingSpinGlassExperiment(81, 0, i_mask_seed);
+	//vRunIsingSpinGlassExperiment(81, 0, iSEED_NO_MASK);
 
 	vRunLeadingOnesExperiment(50, i_mask_seed);
-	vRunLeadingOnesExperiment(50, iSEED_NO_MASK);
+	//vRunLeadingOnesExperiment(50, iSEED_NO_MASK);
 
 	vRunMaxSatExperiment(25, 0, 4.27f, i_mask_seed);
-	vRunMaxSatExperiment(25, 0, 4.27f, iSEED_NO_MASK);
+	//vRunMaxSatExperiment(25, 0, 4.27f, iSEED_NO_MASK);
 
-	vRunNearestNeighborNKExperiment(100, 0, 4, i_mask_seed);
+	//vRunNearestNeighborNKExperiment(100, 0, 4, i_mask_seed);
 	vRunNearestNeighborNKExperiment(100, 0, 4, iSEED_NO_MASK);
 
-	vRunOneMaxExperiment(100, i_mask_seed);
+	//vRunOneMaxExperiment(100, i_mask_seed);
 	vRunOneMaxExperiment(100, iSEED_NO_MASK);
 
-	vRunRastriginExperiment(200, 10, i_mask_seed);
+	//vRunRastriginExperiment(200, 10, i_mask_seed);
 	vRunRastriginExperiment(200, 10, iSEED_NO_MASK);
 }//void main(int iArgCount, char **ppcArgValues)

@@ -24,7 +24,7 @@ class Pyramid
 {
 public:
 	Pyramid(int N, CEvaluator& cEvaluator);
-	~Pyramid();
+	//~Pyramid();
 	vector<Level> populations;
     const int nrBits;
     void iteration();

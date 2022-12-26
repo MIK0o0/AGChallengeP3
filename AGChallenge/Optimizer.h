@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Evaluator.h"
+#include "Pyramid.h" 
 
 #include <random>
 #include <vector>
@@ -18,7 +19,7 @@ public:
 	vector<int> *pvGetCurrentBest() { return &v_current_best; }
 
 private:
-	void v_fill_randomly(vector<int> &vSolution);
+	Pyramid pyramid;
 
 	CEvaluator &c_evaluator;
 

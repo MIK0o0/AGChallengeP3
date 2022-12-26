@@ -2,7 +2,9 @@
 using namespace std;
 Pyramid::Pyramid(int N, CEvaluator& cEvaluator):nrBits(N),c_evaluator(cEvaluator) {
     currentFitnessBest = -DBL_MAX;
-    populations.push_back(Level(nrBits));
+    populations.push_back(Level(nrBits,cEvaluator));
+    random_device c_seed_generator;
+    c_rand_engine.seed(c_seed_generator());
 }
 void Pyramid::v_fill_randomly(vector<int>& vSolution)
 {
@@ -66,6 +68,7 @@ void Pyramid::iteration() {
     }
     for (int i = 0;i<populations.size();i++) {
         vector<int> crossSolution = populations.at(i).cross(solution);
+        fitness = c_evaluator.dEvaluate(solution);
         double crossFitness = c_evaluator.dEvaluate(crossSolution);
         if (fitness < crossFitness && allSolutions.count(crossSolution) ==0)
         {
@@ -76,7 +79,7 @@ void Pyramid::iteration() {
             }
             if (i+1 == populations.size())
             {
-                populations.push_back(Level(nrBits));
+                populations.push_back(Level(nrBits,c_evaluator));
             }
             populations.at(i + 1).addSolution(crossSolution);
             allSolutions.insert(crossSolution);
