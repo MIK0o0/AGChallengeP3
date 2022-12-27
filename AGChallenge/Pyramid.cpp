@@ -1,10 +1,25 @@
 #include "Pyramid.h"
+#include <cfloat>
+#include <iostream>
+#include <windows.h>
+#include <random>
 using namespace std;
 Pyramid::Pyramid(int N, CEvaluator& cEvaluator):nrBits(N),c_evaluator(cEvaluator) {
     currentFitnessBest = -DBL_MAX;
     populations.push_back(Level(nrBits,cEvaluator));
     random_device c_seed_generator;
     c_rand_engine.seed(c_seed_generator());
+    nrOfGenerations = 0;
+}
+Pyramid::~Pyramid() {
+    
+    cout <<"Number of iterations : " << nrOfGenerations << endl;
+    cout << "Best fitness : " << currentFitnessBest << endl;
+    cout << "Best solution : " ;
+    printVect(currentVectBest);
+    populations.clear();
+    allSolutions.clear();
+    currentVectBest.clear();
 }
 void Pyramid::v_fill_randomly(vector<int>& vSolution)
 {
@@ -27,11 +42,12 @@ void Pyramid::hillClimber(vector<int>& solution) {
 
     do {
         improvement = false;
-        
-        shuffle(options.begin(), options.end(), rand);
+        random_device rd;
+        mt19937 g(rd());
+        shuffle(options.begin(), options.end(), g);
         for (const int index : options) {
             
-            if (tried.count(index) != 0) {
+            if (tried.count(index) == 0) {
                 
                 solution.at(index) = (solution.at(index)==1) ? 0:1;
                 newFitness = c_evaluator.dEvaluate(solution);
@@ -50,17 +66,27 @@ void Pyramid::hillClimber(vector<int>& solution) {
     } while (improvement);
 }
 void Pyramid::iteration() {
+    nrOfGenerations++;
     vector<int> solution;
     bool unicat = false;
+
     while (!unicat)
     {
         v_fill_randomly(solution);
+
         hillClimber(solution);
+
         unicat = (allSolutions.count(solution) == 0);
     }
+    cout << "after hillClimb" << endl;
     allSolutions.insert(solution);
+    
+    
     populations.at(0).addSolution(solution);
+    
+
     double fitness = c_evaluator.dEvaluate(solution);
+    
     if (fitness > currentFitnessBest)
     {
         currentVectBest = solution;
@@ -68,6 +94,7 @@ void Pyramid::iteration() {
     }
     for (int i = 0;i<populations.size();i++) {
         vector<int> crossSolution = populations.at(i).cross(solution);
+        cout << "after cross" << endl;
         fitness = c_evaluator.dEvaluate(solution);
         double crossFitness = c_evaluator.dEvaluate(crossSolution);
         if (fitness < crossFitness && allSolutions.count(crossSolution) ==0)
@@ -77,7 +104,7 @@ void Pyramid::iteration() {
                 currentVectBest = crossSolution;
                 currentFitnessBest = crossFitness;
             }
-            if (i+1 == populations.size())
+            if ((i + 1) == populations.size())
             {
                 populations.push_back(Level(nrBits,c_evaluator));
             }
@@ -87,4 +114,10 @@ void Pyramid::iteration() {
     }
     
 
+}
+void Pyramid::printVect(const vector<int>& v) {
+    cout << "\n";
+    for (int i : v) {
+        cout << i ;
+    }
 }

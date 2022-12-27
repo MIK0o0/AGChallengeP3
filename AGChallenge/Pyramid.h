@@ -24,7 +24,7 @@ class Pyramid
 {
 public:
 	Pyramid(int N, CEvaluator& cEvaluator);
-	//~Pyramid();
+	~Pyramid();
 	vector<Level> populations;
     const int nrBits;
     void iteration();
@@ -38,6 +38,8 @@ private:
     void v_fill_randomly(vector<int>& vSolution);
     void hillClimber(vector<int>& solution);
     mt19937 c_rand_engine;
+    int nrOfGenerations;
+    void printVect(const vector<int>& v);
 
 };
 

@@ -7,7 +7,7 @@
 using namespace std;
 
 COptimizer::COptimizer(CEvaluator &cEvaluator)
-	: c_evaluator(cEvaluator),pyramid(c_evaluator.iGetNumberOfBits(), cEvaluator)
+	: c_evaluator(cEvaluator),pyramid(cEvaluator.iGetNumberOfBits(), cEvaluator)
 {
 	random_device c_seed_generator;
 	c_rand_engine.seed(c_seed_generator());
@@ -20,11 +20,13 @@ void COptimizer::vInitialize()
 	
 	d_current_best_fitness = -DBL_MAX;
 	v_current_best.clear();
+	cout << endl;
 	cout << "NOWY#############################################################" << endl;
 }//void COptimizer::vInitialize()
 
 void COptimizer::vRunIteration()
 {
+
 	pyramid.iteration();
 
 	if (pyramid.getDouble() > d_current_best_fitness)
@@ -32,7 +34,7 @@ void COptimizer::vRunIteration()
 		v_current_best = pyramid.getVect();
 		d_current_best_fitness = pyramid.getDouble();
 
-		cout << d_current_best_fitness << "\n"<<endl;
+		cout <<"current best fitness: " << d_current_best_fitness << "\n" << endl;
 	}//if (d_candidate_fitness > d_current_best_fitness)
 }//void COptimizer::vRunIteration()
 

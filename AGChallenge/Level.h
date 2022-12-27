@@ -8,11 +8,12 @@ class Level
 {
 public:
 	Level(int N, CEvaluator& cEvaluator);
-	//~Level();
+	~Level();
 	void addSolution(vector<int>& solution);
 	vector<int> cross(vector<int>& solution);
 	vector<vector<int>> population;
 private:
+	void printVect(const vector<int>& v);
 	const int nrBits;
 	void updateFreq(const vector<int>& solution);
 	void createClusters();
@@ -21,5 +22,6 @@ private:
 	double entropy(const vector<int>& cluster);
 	vector<vector<int>> clusters;
 	vector<vector<int>> frequenciesTable;
+	mt19937 c_rand_engine;
 };
 
