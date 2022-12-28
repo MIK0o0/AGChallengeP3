@@ -25,21 +25,24 @@ class Pyramid
 public:
 	Pyramid(int N, CEvaluator& cEvaluator);
 	~Pyramid();
-	vector<Level> populations;
-    const int nrBits;
+	
     void iteration();
     vector<int>& getVect() { return currentVectBest; };
     double& getDouble() { return currentFitnessBest; };
+
+    vector<Level> populations;
+    const int nrBits;
 private:
+    
+    void v_fill_randomly(vector<int>& vSolution);
+    void hillClimber(vector<int>& solution);
+    void printVect(const vector<int>& v);
+
     vector<int> currentVectBest;
     double currentFitnessBest;
     MySet allSolutions;
     CEvaluator& c_evaluator;
-    void v_fill_randomly(vector<int>& vSolution);
-    void hillClimber(vector<int>& solution);
     mt19937 c_rand_engine;
     int nrOfGenerations;
-    void printVect(const vector<int>& v);
-
 };
 

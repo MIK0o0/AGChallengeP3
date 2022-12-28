@@ -69,49 +69,49 @@ void Pyramid::iteration() {
     nrOfGenerations++;
     vector<int> solution;
     bool unicat = false;
-
-    while (!unicat)
+    if (currentFitnessBest<1)
     {
-        v_fill_randomly(solution);
-
-        hillClimber(solution);
-
-        unicat = (allSolutions.count(solution) == 0);
-    }
-    cout << "after hillClimb" << endl;
-    allSolutions.insert(solution);
-    
-    
-    populations.at(0).addSolution(solution);
-    
-
-    double fitness = c_evaluator.dEvaluate(solution);
-    
-    if (fitness > currentFitnessBest)
-    {
-        currentVectBest = solution;
-        currentFitnessBest = fitness;
-    }
-    for (int i = 0;i<populations.size();i++) {
-        vector<int> crossSolution = populations.at(i).cross(solution);
-        cout << "after cross" << endl;
-        fitness = c_evaluator.dEvaluate(solution);
-        double crossFitness = c_evaluator.dEvaluate(crossSolution);
-        if (fitness < crossFitness && allSolutions.count(crossSolution) ==0)
+        while (!unicat)
         {
-            if (crossFitness >currentFitnessBest)
+            v_fill_randomly(solution);
+
+            hillClimber(solution);
+
+            unicat = (allSolutions.count(solution) == 0);
+        }
+        cout << "after unicat" << endl;
+        allSolutions.insert(solution);
+
+        populations.at(0).addSolution(solution);
+
+        double fitness = c_evaluator.dEvaluate(solution);
+        if (fitness > currentFitnessBest)
+        {
+            currentVectBest = solution;
+            currentFitnessBest = fitness;
+        }
+        for (int i = 0; i < populations.size(); i++) {
+            vector<int> crossSolution = populations.at(i).cross(solution);
+            cout << "after cross" << endl;
+            fitness = c_evaluator.dEvaluate(solution);
+            double crossFitness = c_evaluator.dEvaluate(crossSolution);
+            if (fitness < crossFitness && allSolutions.count(crossSolution) == 0)
             {
-                currentVectBest = crossSolution;
-                currentFitnessBest = crossFitness;
+                if (crossFitness > currentFitnessBest)
+                {
+                    currentVectBest = crossSolution;
+                    currentFitnessBest = crossFitness;
+                }
+                if ((i + 1) == populations.size())
+                {
+                    populations.push_back(Level(nrBits, c_evaluator));
+                }
+                populations.at(i + 1).addSolution(crossSolution);
+                allSolutions.insert(crossSolution);
             }
-            if ((i + 1) == populations.size())
-            {
-                populations.push_back(Level(nrBits,c_evaluator));
-            }
-            populations.at(i + 1).addSolution(crossSolution);
-            allSolutions.insert(crossSolution);
         }
     }
+    
     
 
 }
