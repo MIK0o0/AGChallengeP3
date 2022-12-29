@@ -112,7 +112,7 @@ void Level::createClusters() {
 				(*cij).insert((*cij).end(), (*(*(indexUnmerged + j))).begin(), (*(*(indexUnmerged + j))).end());
 				//cout << "unmerged.size = " << unmerged.size() << endl;
 				double distance = distanceCalculate(*(indexUnmerged + i), *(indexUnmerged + j),cij);
-				cout << distance << endl;
+				//cout << distance << endl;
 				if (distance< minDistance)
 				{
 					minDistance = distance;
@@ -127,6 +127,7 @@ void Level::createClusters() {
 		if (min_i >=0 && min_j >=0)
 		{
 			if (minDistance == 0 && !clusters.empty()) {
+
 				clusters.erase(clusters.begin()+findidex(clusters, (*(*(indexUnmerged + min_i)))));
 				clusters.erase(clusters.begin() + findidex(clusters, (*(*(indexUnmerged + min_j)))));
 			}
@@ -162,9 +163,7 @@ double Level::distanceCalculate(const vector<int>* ci, const vector<int>* cj, co
 	//printVect(ci);
 	//printVect(cj);
 	//cout  << endl;
-	for (int i = 0; i < (*ci).size(); i++)
-	{
-		for (int j = 0; j < (*cj).size(); j++) {
+	
 			int divideNumber = entropy(cij);
 			if (divideNumber == 0)
 			{
@@ -173,10 +172,9 @@ double Level::distanceCalculate(const vector<int>* ci, const vector<int>* cj, co
 			else {
 				retValue += (2 - ((entropy(ci) + entropy(cj)) / divideNumber));
 			}
-		}
-	}
+		
 	//cout << "distance calulate end " << endl;
-	return retValue / ((double)(*ci).size() * (double)(*cj).size());
+	return retValue;
 }
 double Level::entropy(const vector<int>* c) {
 	double retValue = 0;

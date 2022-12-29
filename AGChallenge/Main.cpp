@@ -10,7 +10,7 @@ using namespace TimeCounters;
 
 using namespace std;
 
-#define dMAX_TIME  2
+#define dMAX_TIME  2*60
 
 
 void vRunExperiment(CEvaluator &cConfiguredEvaluator)
@@ -111,10 +111,10 @@ void main(int iArgCount, char **ppcArgValues)
 	//vRunIsingSpinGlassExperiment(81, 0, i_mask_seed);
 	//vRunIsingSpinGlassExperiment(81, 0, iSEED_NO_MASK);
 
-	vRunLeadingOnesExperiment(300, i_mask_seed);
+	//vRunLeadingOnesExperiment(300, i_mask_seed);
 	//vRunLeadingOnesExperiment(50, iSEED_NO_MASK);
 
-	//vRunMaxSatExperiment(100, 0, 4.27f, i_mask_seed);
+	vRunMaxSatExperiment(100, 0, 4.27f, i_mask_seed);
 	//vRunMaxSatExperiment(25, 0, 4.27f, iSEED_NO_MASK);
 
 	//vRunNearestNeighborNKExperiment(100, 0, 4, i_mask_seed);
