@@ -155,7 +155,9 @@
     <ClCompile Include="Util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CMySmartPointer.h" />
     <ClInclude Include="Configuration.h" />
+    <ClInclude Include="CRefCounter.h" />
     <ClInclude Include="Evaluation.h" />
     <ClInclude Include="Evaluator.h" />
     <ClInclude Include="Level.h" />

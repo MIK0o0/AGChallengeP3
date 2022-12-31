@@ -92,7 +92,7 @@ void Pyramid::iteration() {
         }
         for (int i = 0; i < populations.size(); i++) {
             vector<int> crossSolution = populations.at(i).cross(solution);
-            cout << "after cross" << endl;
+            //cout << "after cross" << endl;
             fitness = c_evaluator.dEvaluate(solution);
             double crossFitness = c_evaluator.dEvaluate(crossSolution);
             if (fitness < crossFitness && allSolutions.count(crossSolution) == 0)

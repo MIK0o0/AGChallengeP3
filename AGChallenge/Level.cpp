@@ -2,6 +2,9 @@
 #include <unordered_map>
 #include <numeric>
 #include <algorithm>
+#include "Triangle.h"
+#include "CMySmartPointer.h"
+using std::tuple;
 
 Level::Level(int N, CEvaluator& cEvaluator):nrBits(N), frequenciesTable(N,vector<int>(N,0)), c_evaluator(cEvaluator){
 	random_device c_seed_generator;
@@ -36,7 +39,7 @@ void Level::addSolution(vector<int>& solution) {
 	updateFreq(solution);
 
 	createClusters();
-	cout << "after creating cluster" << endl;
+	//cout << "after creating cluster" << endl;
 	
 }
 vector<int> Level::cross(vector<int>& solution) {
@@ -78,85 +81,135 @@ vector<int> Level::cross(vector<int>& solution) {
 	return solution;
 }
 void Level::createClusters() {
+	//usuwamy stare clustery
 	vector<int>** c = clusters.data();
 	for (size_t i = 0; i < clusters.size(); i++)
 	{
 		delete *(c + i);
 	}
-	//delete c;
 	clusters.clear();
-	vector<vector<int>*> unmerged;
-	
-	
+
 	for (int i = 0; i < nrBits; ++i) {
-		unmerged.push_back(new vector<int>{ i });
-		clusters.push_back(new vector<int> {i});
+		clusters.push_back(new vector<int>{ i });
 	}
 
-	while (unmerged.size()>1)
-	{
-		double minDistance = DBL_MAX;
-		int min_i = -1;
-		int min_j = -1;
-		vector<int>** indexUnmerged = unmerged.data();
-		vector<int> min_cij;
-		for (int i = 0; i < unmerged.size(); i++)
+	//tworzymy macierz wskaŸników trójk¹tów
+	vector<vector<Triangle*>> matrix;
+	//vector u¿ytecznych indexów
+	vector<bool> useful;
+	//liczniik ile jest unmerged klastrów
+	int counter = 0;
+	// wektor pary dystansu ze wskaŸnikiem
+	vector<tuple<double,int ,int , Triangle*>> distanceVect;
+	//wype³niamy macierz pocz¹tkowymi wartoœciami (pojedyñczymi clustrami)
+	for (int i = 0; i < nrBits; ++i) {
+		//cout << "first loop" << endl;
+		useful.push_back(true);
+		counter++;
+		matrix.push_back({});
+		for (int j = 0; j < nrBits; j++)
 		{
-			for (int j = i+1; j < unmerged.size(); j++)
+			if (j>=i)
 			{
-				//cout << "i = " << i << "; j = " << j << endl;
-				//printVect(unmerged.at(i));
-				// 
-				vector<int>* cij = new vector<int>;
-				(*cij).insert((*cij).end(), (*(*(indexUnmerged + i))).begin(), (*(*(indexUnmerged + i))).end());
-				(*cij).insert((*cij).end(), (*(*(indexUnmerged + j))).begin(), (*(*(indexUnmerged + j))).end());
-				//cout << "unmerged.size = " << unmerged.size() << endl;
-				double distance = distanceCalculate(*(indexUnmerged + i), *(indexUnmerged + j),cij);
-				//cout << distance << endl;
-				if (distance< minDistance)
-				{
-					minDistance = distance;
-					min_i = i;
-					min_j = j;
-					min_cij = *cij;
-				}
-				delete cij;
+				//cout << "j>=i+1" << endl;
+				matrix[i].push_back(new Triangle(i, j,CMySmartPointer<vector<int>>( new vector<int>{ i }),
+					CMySmartPointer<vector<int>>(new vector<int>{ j }), &frequenciesTable));
+				distanceVect.push_back(tuple<double,int,int, Triangle*>((*matrix[i][j]).distance,i,j, matrix[i][j]));
 			}
+			else
+			{	
+				//cout << "else" << endl;
+				//cout << "po tym sie wywale" << endl;
+				matrix[i].push_back(NULL);
+				//matrix[i].push_back(new Triangle(i, j, CMySmartPointer<vector<int>>(new vector<int>{ i }),
+					//CMySmartPointer<vector<int>>(new vector<int>{ j }), &frequenciesTable));
+			}
+			
 		}
-		//cout << min_i << " ; " << min_j << endl;
-		if (min_i >=0 && min_j >=0)
+	}
+	//cout << "before while" << endl;
+	while (counter>1)
+	{
+		//cout << counter << endl;
+		double minDistance;
+		int min_i;
+		int min_j;
+		Triangle* minTriangle;
+		
+		sort(distanceVect.begin(), distanceVect.end(), [](const tuple<double,int,int, Triangle*> a, const tuple<double, int, int, Triangle*> b) {
+			return get<0>(a) > get<0>(b);
+			});
+
+		minDistance =get<0>( distanceVect.back());
+		minTriangle = get<3>(distanceVect.back());
+		min_i = minTriangle->ciIndex;
+		min_j = minTriangle->cjIndex;
+		distanceVect.pop_back();
+		cout << minTriangle->cij->size()<<endl;
+		if (minDistance == 0 && !clusters.empty()) {
+			cout << "before erase" << endl;
+			clusters.erase(clusters.begin() + findidex(clusters, *(minTriangle->ci)));
+			clusters.erase(clusters.begin() + findidex(clusters, *(minTriangle->cj)));
+			cout << "after erase" << endl;
+		}
+
+		useful[min_i] = false;
+		counter--;
+		useful[min_j] = false;
+		counter--;
+		useful.push_back(true);
+		distanceVect.erase(remove_if(distanceVect.begin(), distanceVect.end(), [min_i,min_j](tuple<double, int, int, Triangle*> a) {
+			return ((get<1>(a) == min_i) || (get<1>(a) == min_j) || (get<2>(a) == min_i) || (get<2>(a) == min_j));
+			}),distanceVect.end());
+		counter++;
+		//cout << "matrix size before add : " << matrix.size() << endl;
+		//cout << "raz" << endl;
+		matrix.push_back(vector<Triangle*>(matrix.size(),NULL));
+
+		matrix.back().push_back(new Triangle(matrix.size()-1, matrix.size() - 1, minTriangle->cij,minTriangle->entropyCij));
+		//cout << "matrix size after add : " << matrix.size() << endl;
+		//cout << "before calculatin new distances" << endl;
+		//cout << "dwa" << endl;
+		int mSize = matrix.size();
+		vector<Triangle*>* ptrMatrix = matrix.data();
+		for (int i = 0;i<mSize-1;i++)
 		{
-			if (minDistance == 0 && !clusters.empty()) {
-
-				clusters.erase(clusters.begin()+findidex(clusters, (*(*(indexUnmerged + min_i)))));
-				clusters.erase(clusters.begin() + findidex(clusters, (*(*(indexUnmerged + min_j)))));
+			if (useful.at(i))
+			{
+				Triangle** ptrTriangle = (ptrMatrix + i)->data();
+				//cout << "dodaje" << endl;
+				(ptrMatrix + i)->push_back(new Triangle(i, mSize - 1, (*(ptrTriangle + i))->ci, minTriangle->cij,
+					(*(ptrTriangle + i))->entropyCi, minTriangle->entropyCij, &frequenciesTable));
+				distanceVect.push_back(tuple<double,int,int,Triangle*>((ptrMatrix + i)->back()->distance,i,mSize-1, (ptrMatrix + i)->back()));
+				//cout << "po dodaniu" << endl;
 			}
-
-			unmerged.erase(unmerged.begin() + min_j);
-			unmerged.erase(unmerged.begin() + min_i);
-			unmerged.push_back(new vector<int> (min_cij));
-			clusters.push_back(new vector<int>(min_cij));
+			else
+			{
+				//cout << "before else" << endl;
+				(ptrMatrix + i)->push_back(NULL);
+			}
 		}
-		min_cij.clear();
+		clusters.push_back(new vector<int>(*(minTriangle->cij)));
+		//cout << "trzy" << endl;
 		
 	}
-	
 	
 	sort(clusters.begin(), clusters.end(), [](const vector<int>* a, const vector<int>* b) {
 		return (*a).size() < (*b).size();
 		});
 
-	
-	clusters.pop_back();
-	
-	//delete unmerge:
-	vector<int>** u = unmerged.data();
-	for (size_t i = 0; i < unmerged.size(); i++)
+	for (size_t i = 0; i < matrix.size(); i++)
 	{
-		delete* (u + i);
+		for (size_t j = i + 1; j < matrix.at(0).size(); j++) {
+			delete matrix.at(i).at(j);
+		}
+		matrix.at(i).clear();
 	}
-	//delete u;
-	unmerged.clear();
+	matrix.clear();
+	useful.clear();
+	distanceVect.clear();
+
+	clusters.pop_back();
 }
 double Level::distanceCalculate(const vector<int>* ci, const vector<int>* cj, const vector<int>* cij) {
 	double retValue = 0;
@@ -164,7 +217,7 @@ double Level::distanceCalculate(const vector<int>* ci, const vector<int>* cj, co
 	//printVect(cj);
 	//cout  << endl;
 	
-			int divideNumber = entropy(cij);
+			double divideNumber = entropy(cij);
 			if (divideNumber == 0)
 			{
 				retValue += 2;
