@@ -75,6 +75,7 @@ double Triangle::entropy(const vector<int>* c) {
 		const int* ptrKolumn = (ptrRow + i)->data();
 		for (int j : *c) {
 			valueCounts[*(ptrKolumn + j)]++;
+			
 		}
 		for (std::pair<const int, int> p : valueCounts)
 		{

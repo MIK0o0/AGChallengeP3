@@ -6,38 +6,61 @@
 #include "CMySmartPointer.h"
 using std::tuple;
 
-Level::Level(int N, CEvaluator& cEvaluator):nrBits(N), frequenciesTable(N,vector<int>(N,0)), c_evaluator(cEvaluator){
+Level::Level(int N, CEvaluator& cEvaluator):nrBits(N), c_evaluator(cEvaluator) {
+	frequenciesTable = new vector<vector<int>>(nrBits, vector<int>(nrBits, 0));
+	population = new vector<vector<int>>;
+	
 	random_device c_seed_generator;
 	c_rand_engine.seed(c_seed_generator());
+	//cout << frequenciesTable->size() << endl;
+
+}
+Level::Level(const Level& pcOther) :nrBits(pcOther.nrBits), c_evaluator(pcOther.c_evaluator) {
+	frequenciesTable = pcOther.frequenciesTable;
+	population = pcOther.population;
+	random_device c_seed_generator;
+	c_rand_engine.seed(c_seed_generator());
+	//cout << "Level copy" << endl;
+
 }
 Level::~Level() {
+	//cout << "destruktor level" << endl;
 	vector<int>** c = clusters.data();
 	for (size_t i = 0; i < clusters.size(); i++)
 	{
 		delete *(c + i);
 	}
-	//delete c;
-	population.clear();
 	clusters.clear();
-	frequenciesTable.clear();
+	//population->clear();
+	
+	//frequenciesTable->clear();
+	//delete frequenciesTable;
+}
+void Level::deleteDynamicVect() {
+	delete frequenciesTable;
+	for (size_t i = 0; i < clusters.size(); i++)
+	{
+		delete clusters.at(i);
+	}
 }
 void Level::updateFreq(const vector<int>& solution) {
 	const int* ptrSolution = solution.data();
-	vector<int>* ptrRow = frequenciesTable.data();
+	vector<int>* ptrRow = frequenciesTable->data();
+	
+
 	for (int i = 0; i < nrBits; i++)
 	{
 		int* ptrKolumn = (ptrRow + i)->data();
 		for (int j = 0; j < nrBits; j++) {
 			(*(ptrKolumn + j)) += (*(ptrSolution + i) == *(ptrSolution + j));
 		}
+		//printVect(*(ptrRow + i));
 	}
 }
 void Level::addSolution(vector<int>& solution) {
 	
-	population.push_back(solution);
-	
+	population->push_back(solution);
 	updateFreq(solution);
-
 	createClusters();
 	//cout << "after creating cluster" << endl;
 	
@@ -51,11 +74,11 @@ vector<int> Level::cross(vector<int>& solution) {
 	shuffle(options.begin(), options.end(), g);
 	//cout << "shuffle end" << endl;*/
 	
-	uniform_int_distribution<int> index(0, population.size()-1);
+	uniform_int_distribution<int> index(0, population->size()-1);
 
 	for (vector<int>* cluster : clusters)
 	{	
-		vector<int>& donor = population.at(index(c_rand_engine));
+		vector<int>& donor = population->at(index(c_rand_engine));
 		vector<int> copySolution;
 		double fitness = c_evaluator.dEvaluate(solution);
 
@@ -101,20 +124,23 @@ void Level::createClusters() {
 	int counter = 0;
 	// wektor pary dystansu ze wskaŸnikiem
 	vector<tuple<double,int ,int , Triangle*>> distanceVect;
+	vector < CMySmartPointer<vector<int>>> allClusters;
 	//wype³niamy macierz pocz¹tkowymi wartoœciami (pojedyñczymi clustrami)
 	for (int i = 0; i < nrBits; ++i) {
 		//cout << "first loop" << endl;
 		useful.push_back(true);
 		counter++;
 		matrix.push_back({});
+		allClusters.push_back(CMySmartPointer<vector<int>>(new vector<int>{ i }));
 		for (int j = 0; j < nrBits; j++)
 		{
 			if (j>=i)
 			{
 				//cout << "j>=i+1" << endl;
-				matrix[i].push_back(new Triangle(i, j,CMySmartPointer<vector<int>>( new vector<int>{ i }),
-					CMySmartPointer<vector<int>>(new vector<int>{ j }), &frequenciesTable));
+				matrix[i].push_back(new Triangle(i, j,CMySmartPointer<vector<int>>( allClusters.at(i)),
+					CMySmartPointer<vector<int>>(new vector<int>{ j }), frequenciesTable));
 				distanceVect.push_back(tuple<double,int,int, Triangle*>((*matrix[i][j]).distance,i,j, matrix[i][j]));
+				
 			}
 			else
 			{	
@@ -127,6 +153,7 @@ void Level::createClusters() {
 			
 		}
 	}
+	int indexAdd = nrBits;
 	//cout << "before while" << endl;
 	while (counter>1)
 	{
@@ -145,7 +172,7 @@ void Level::createClusters() {
 		min_i = minTriangle->ciIndex;
 		min_j = minTriangle->cjIndex;
 		distanceVect.pop_back();
-		cout << minTriangle->cij->size()<<endl;
+		//cout << minTriangle->cij->size()<<endl;
 		if (minDistance == 0 && !clusters.empty()) {
 			cout << "before erase" << endl;
 			clusters.erase(clusters.begin() + findidex(clusters, *(minTriangle->ci)));
@@ -162,30 +189,30 @@ void Level::createClusters() {
 			return ((get<1>(a) == min_i) || (get<1>(a) == min_j) || (get<2>(a) == min_i) || (get<2>(a) == min_j));
 			}),distanceVect.end());
 		counter++;
-		//cout << "matrix size before add : " << matrix.size() << endl;
-		//cout << "raz" << endl;
+		
 		matrix.push_back(vector<Triangle*>(matrix.size(),NULL));
 
 		matrix.back().push_back(new Triangle(matrix.size()-1, matrix.size() - 1, minTriangle->cij,minTriangle->entropyCij));
-		//cout << "matrix size after add : " << matrix.size() << endl;
-		//cout << "before calculatin new distances" << endl;
-		//cout << "dwa" << endl;
+		
 		int mSize = matrix.size();
+		//matrix.erase(remove_if(matrix.begin(), matrix.end(), [min_i,min_j](vector<Triangle*> a) {
+			//return (a.back()->ciIndex == min_i || a.back()->ciIndex == min_j);
+			//}), matrix.end());
 		vector<Triangle*>* ptrMatrix = matrix.data();
 		for (int i = 0;i<mSize-1;i++)
 		{
 			if (useful.at(i))
 			{
 				Triangle** ptrTriangle = (ptrMatrix + i)->data();
-				//cout << "dodaje" << endl;
-				(ptrMatrix + i)->push_back(new Triangle(i, mSize - 1, (*(ptrTriangle + i))->ci, minTriangle->cij,
-					(*(ptrTriangle + i))->entropyCi, minTriangle->entropyCij, &frequenciesTable));
+				
+				(ptrMatrix + i)->push_back(new Triangle(i, mSize - 1, ((ptrMatrix + i)->back())->ci, minTriangle->cij,
+					((ptrMatrix + i)->back())->entropyCi, minTriangle->entropyCij, frequenciesTable));
 				distanceVect.push_back(tuple<double,int,int,Triangle*>((ptrMatrix + i)->back()->distance,i,mSize-1, (ptrMatrix + i)->back()));
-				//cout << "po dodaniu" << endl;
+				
 			}
 			else
 			{
-				//cout << "before else" << endl;
+				
 				(ptrMatrix + i)->push_back(NULL);
 			}
 		}
@@ -231,7 +258,7 @@ double Level::distanceCalculate(const vector<int>* ci, const vector<int>* cj, co
 }
 double Level::entropy(const vector<int>* c) {
 	double retValue = 0;
-	vector<int>* ptrRow = frequenciesTable.data();
+	vector<int>* ptrRow = frequenciesTable->data();
 	for (int i : *c)
 	{
 		std::unordered_map<int, int> valueCounts;
