@@ -125,19 +125,23 @@ void Level::createClusters() {
 	// wektor pary dystansu ze wskaŸnikiem
 	vector<tuple<double,int ,int , Triangle*>> distanceVect;
 	vector < CMySmartPointer<vector<int>>> allClusters;
+	vector<vector<pair<int, unordered_map<int, int>>>> allMaps;
 	//wype³niamy macierz pocz¹tkowymi wartoœciami (pojedyñczymi clustrami)
 	for (int i = 0; i < nrBits; ++i) {
 		//cout << "first loop" << endl;
 		useful.push_back(true);
 		counter++;
 		matrix.push_back({});
+
 		allClusters.push_back(CMySmartPointer<vector<int>>(new vector<int>{ i }));
+		allMaps.push_back({ pair<int, unordered_map< int, int>>(i, {}) });
+		allMaps.back().back().second[(*frequenciesTable)[i][i]]++;
 		for (int j = 0; j < nrBits; j++)
 		{
 			if (j>=i)
 			{
 				//cout << "j>=i+1" << endl;
-				matrix[i].push_back(new Triangle(i, j,CMySmartPointer<vector<int>>( allClusters.at(i)),
+				matrix[i].push_back(new Triangle(i, j, allClusters.at(i),
 					CMySmartPointer<vector<int>>(new vector<int>{ j }), frequenciesTable));
 				distanceVect.push_back(tuple<double,int,int, Triangle*>((*matrix[i][j]).distance,i,j, matrix[i][j]));
 				
@@ -153,7 +157,7 @@ void Level::createClusters() {
 			
 		}
 	}
-	int indexAdd = nrBits;
+	int indexAdd = matrix.size()-1;
 	//cout << "before while" << endl;
 	while (counter>1)
 	{
@@ -190,7 +194,11 @@ void Level::createClusters() {
 			}),distanceVect.end());
 		counter++;
 		
-		matrix.push_back(vector<Triangle*>(matrix.size(),NULL));
+		allClusters.push_back(minTriangle->cij);
+		allMaps.push_back(minTriangle->MapCi);
+		indexAdd++;
+
+		matrix.push_back({});
 
 		matrix.back().push_back(new Triangle(matrix.size()-1, matrix.size() - 1, minTriangle->cij,minTriangle->entropyCij));
 		
@@ -198,6 +206,7 @@ void Level::createClusters() {
 		//matrix.erase(remove_if(matrix.begin(), matrix.end(), [min_i,min_j](vector<Triangle*> a) {
 			//return (a.back()->ciIndex == min_i || a.back()->ciIndex == min_j);
 			//}), matrix.end());
+		
 		vector<Triangle*>* ptrMatrix = matrix.data();
 		for (int i = 0;i<mSize-1;i++)
 		{
@@ -205,18 +214,28 @@ void Level::createClusters() {
 			{
 				Triangle** ptrTriangle = (ptrMatrix + i)->data();
 				
-				(ptrMatrix + i)->push_back(new Triangle(i, mSize - 1, ((ptrMatrix + i)->back())->ci, minTriangle->cij,
-					((ptrMatrix + i)->back())->entropyCi, minTriangle->entropyCij, frequenciesTable));
+				(ptrMatrix + i)->push_back(new Triangle(i, indexAdd,allClusters.at(i) /*((ptrMatrix + i)->back())->ci*/, minTriangle->cij,
+					((ptrMatrix + i)->back())->entropyCi, minTriangle->entropyCij,allMaps.at(i),allMaps.at(i), frequenciesTable));
 				distanceVect.push_back(tuple<double,int,int,Triangle*>((ptrMatrix + i)->back()->distance,i,mSize-1, (ptrMatrix + i)->back()));
 				
 			}
 			else
 			{
 				
-				(ptrMatrix + i)->push_back(NULL);
+				//(ptrMatrix + i)->push_back(NULL);
 			}
 		}
 		clusters.push_back(new vector<int>(*(minTriangle->cij)));
+		for (size_t i = 0; i < matrix.at(min_i).size(); i++)
+		{
+			delete matrix.at(min_i).at(i);
+		}
+		matrix.at(min_i).clear();
+		for (size_t i = 0; i < matrix.at(min_j).size(); i++)
+		{
+			delete matrix.at(min_j).at(i);
+		}
+		matrix.at(min_j).clear();
 		//cout << "trzy" << endl;
 		
 	}

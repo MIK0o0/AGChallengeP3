@@ -1,5 +1,6 @@
 #include "Triangle.h"
 #include <unordered_map>
+using std::pair;
 
 Triangle::Triangle(int iIndex, int jIndex, CMySmartPointer< vector<int>>& nci, 
 	CMySmartPointer< vector<int>>& ncj, const vector<vector<int>>* freqTab):ci(nci),cj(ncj),cij(new vector<int>)
@@ -12,17 +13,23 @@ Triangle::Triangle(int iIndex, int jIndex, CMySmartPointer< vector<int>>& nci,
 	cij->insert(cij->end(), ci->begin(), ci->end());
 	cij->insert(cij->end(), cj->begin(), cj->end());
 
+	MapCi.push_back(pair<int, unordered_map< int, int>>(ciIndex,{}));
+	MapCj.push_back(pair<int, unordered_map< int, int>>(cjIndex, {}));
+	MapCi.back().second[(*frequenciesTable)[ciIndex][ciIndex]]++;
+	MapCj.back().second[(*frequenciesTable)[cjIndex][cjIndex]]++;
+
 	entropyCi = entropy(ci.getPtr());
 	entropyCj = entropy(cj.getPtr());
-	entropyCij = entropy(cij.getPtr());
+	entropyCij = entropyMap(cij.getPtr());
 
 	distance = distanceCalculate();
 
 }
 Triangle::Triangle(int iIndex, int jIndex, CMySmartPointer< vector<int>>& nci, 
 	CMySmartPointer< vector<int>>& ncj,
-	double entropyCI, double entropyCJ, const vector<vector<int>>* freqTab)
-	:ci(nci),cj(ncj),cij(new vector<int>)
+	double entropyCI, double entropyCJ, vector<pair<int, unordered_map<int, int>>> mapci,
+	vector<pair<int, unordered_map<int, int>>> mapcj, const vector<vector<int>>* freqTab)
+	:ci(nci),cj(ncj),cij(new vector<int>),MapCi(mapci),MapCj(mapcj)
 {
 	ciIndex = iIndex;
 	cjIndex = jIndex;
@@ -36,7 +43,7 @@ Triangle::Triangle(int iIndex, int jIndex, CMySmartPointer< vector<int>>& nci,
 
 	entropyCi = entropyCI;
 	entropyCj = entropyCJ;
-	entropyCij = entropy(cij.getPtr());
+	entropyCij = entropyMap(cij.getPtr());
 
 	distance = distanceCalculate();
 
@@ -84,5 +91,39 @@ double Triangle::entropy(const vector<int>* c) {
 		}
 	}
 
+	return retValue;
+}
+double Triangle::entropyMap(const vector<int>* c) {
+	//const vector<int>* ptrRow = frequenciesTable->data();
+	double retValue = 0;
+	for (pair<int,unordered_map<int,int>> pi: MapCi)
+	{
+		bool flag = true;
+		for (pair<int,unordered_map<int,int>> pj:MapCj)
+		{
+			if (flag)
+			{
+				pj.second[(*frequenciesTable)[pj.first][pi.first]]++;
+				flag = false;
+			}
+			pi.second[(*frequenciesTable)[pi.first][pj.first]]++;
+		}
+		for (std::pair<const int, int> p : pi.second)
+		{
+			double probability = (double)(p.second) / (double)(*c).size();
+			retValue -= probability * log2(probability);
+		}
+	}
+	for (pair<int, unordered_map<int, int>> pj : MapCj)
+	{
+		for (std::pair<const int, int> p : pj.second)
+		{
+			double probability = (double)(p.second) / (double)(*c).size();
+			retValue -= probability * log2(probability);
+		}
+		
+	}
+	MapCi.insert(MapCi.end(), MapCj.begin(), MapCj.end());
+	MapCj.clear();
 	return retValue;
 }
