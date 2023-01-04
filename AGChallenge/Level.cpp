@@ -115,7 +115,7 @@ void Level::createClusters() {
 	for (int i = 0; i < nrBits; ++i) {
 		clusters.push_back(new vector<int>{ i });
 	}
-
+	//cout << "Buduje" << endl;
 	//tworzymy macierz wskaŸników trójk¹tów
 	vector<vector<Triangle*>> matrix;
 	//vector u¿ytecznych indexów
@@ -140,7 +140,6 @@ void Level::createClusters() {
 		{
 			if (j>=i)
 			{
-				//cout << "j>=i+1" << endl;
 				matrix[i].push_back(new Triangle(i, j, allClusters.at(i),
 					CMySmartPointer<vector<int>>(new vector<int>{ j }), frequenciesTable));
 				distanceVect.push_back(tuple<double,int,int, Triangle*>((*matrix[i][j]).distance,i,j, matrix[i][j]));
@@ -148,11 +147,7 @@ void Level::createClusters() {
 			}
 			else
 			{	
-				//cout << "else" << endl;
-				//cout << "po tym sie wywale" << endl;
 				matrix[i].push_back(NULL);
-				//matrix[i].push_back(new Triangle(i, j, CMySmartPointer<vector<int>>(new vector<int>{ i }),
-					//CMySmartPointer<vector<int>>(new vector<int>{ j }), &frequenciesTable));
 			}
 			
 		}
@@ -176,7 +171,7 @@ void Level::createClusters() {
 		min_i = minTriangle->ciIndex;
 		min_j = minTriangle->cjIndex;
 		distanceVect.pop_back();
-		//cout << minTriangle->cij->size()<<endl;
+		
 		if (minDistance == 0 && !clusters.empty()) {
 			cout << "before erase" << endl;
 			clusters.erase(clusters.begin() + findidex(clusters, *(minTriangle->ci)));
@@ -203,18 +198,14 @@ void Level::createClusters() {
 		matrix.back().push_back(new Triangle(matrix.size()-1, matrix.size() - 1, minTriangle->cij,minTriangle->entropyCij));
 		
 		int mSize = matrix.size();
-		//matrix.erase(remove_if(matrix.begin(), matrix.end(), [min_i,min_j](vector<Triangle*> a) {
-			//return (a.back()->ciIndex == min_i || a.back()->ciIndex == min_j);
-			//}), matrix.end());
 		
 		vector<Triangle*>* ptrMatrix = matrix.data();
 		for (int i = 0;i<mSize-1;i++)
 		{
 			if (useful.at(i))
 			{
-				Triangle** ptrTriangle = (ptrMatrix + i)->data();
 				
-				(ptrMatrix + i)->push_back(new Triangle(i, indexAdd,allClusters.at(i) /*((ptrMatrix + i)->back())->ci*/, minTriangle->cij,
+				(ptrMatrix + i)->push_back(new Triangle(i, indexAdd,allClusters.at(i), minTriangle->cij,
 					((ptrMatrix + i)->back())->entropyCi, minTriangle->entropyCij,allMaps.at(i),allMaps.at(i), frequenciesTable));
 				distanceVect.push_back(tuple<double,int,int,Triangle*>((ptrMatrix + i)->back()->distance,i,mSize-1, (ptrMatrix + i)->back()));
 				
@@ -236,8 +227,14 @@ void Level::createClusters() {
 			delete matrix.at(min_j).at(i);
 		}
 		matrix.at(min_j).clear();
-		//cout << "trzy" << endl;
-		
+		/*
+		for (size_t i = 0; i < matrix.size(); i++)
+		{
+			matrix.at(i).erase(remove_if(matrix.at(i).begin(), matrix.at(i).end(), [min_i, min_j](Triangle* a) {
+				return (a->ciIndex == min_i || a->ciIndex == min_j || a->cjIndex == min_i || a->cjIndex == min_j);
+				}), matrix.at(i).end());
+		}
+		*/
 	}
 	
 	sort(clusters.begin(), clusters.end(), [](const vector<int>* a, const vector<int>* b) {
@@ -256,45 +253,6 @@ void Level::createClusters() {
 	distanceVect.clear();
 
 	clusters.pop_back();
-}
-double Level::distanceCalculate(const vector<int>* ci, const vector<int>* cj, const vector<int>* cij) {
-	double retValue = 0;
-	//printVect(ci);
-	//printVect(cj);
-	//cout  << endl;
-	
-			double divideNumber = entropy(cij);
-			if (divideNumber == 0)
-			{
-				retValue += 2;
-			}
-			else {
-				retValue += (2 - ((entropy(ci) + entropy(cj)) / divideNumber));
-			}
-		
-	//cout << "distance calulate end " << endl;
-	return retValue;
-}
-double Level::entropy(const vector<int>* c) {
-	double retValue = 0;
-	vector<int>* ptrRow = frequenciesTable->data();
-	for (int i : *c)
-	{
-		std::unordered_map<int, int> valueCounts;
-		int* ptrKolumn = (ptrRow + i)->data();
-		for (int j : *c) {
-			valueCounts[*(ptrKolumn + j)]++;
-		}
-		for (  std::pair<const int,int> p : valueCounts)
-		{
-			double probability = (double)(p.second) / (double)(*c).size();
-			retValue -= probability * log2(probability);
-		}
-	}
-	
-
-	//cout << retValue << endl;
-	return retValue;
 }
 void Level::printVect(const vector<int>& v) {
 	cout << "\n";

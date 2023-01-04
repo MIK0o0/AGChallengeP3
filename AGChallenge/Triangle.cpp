@@ -40,7 +40,6 @@ Triangle::Triangle(int iIndex, int jIndex, CMySmartPointer< vector<int>>& nci,
 	cij->insert(cij->end(), cj->begin(), cj->end());
 
 	//std::cout << "licze" << std::endl;
-
 	entropyCi = entropyCI;
 	entropyCj = entropyCJ;
 	entropyCij = entropyMap(cij.getPtr());

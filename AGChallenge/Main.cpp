@@ -114,7 +114,7 @@ void main(int iArgCount, char **ppcArgValues)
 	//vRunLeadingOnesExperiment(300, i_mask_seed);
 	//vRunLeadingOnesExperiment(50, iSEED_NO_MASK);
 
-	vRunMaxSatExperiment(500, 0, 4.27f, i_mask_seed);
+	vRunMaxSatExperiment(1000, 0, 4.27f, i_mask_seed);
 	//vRunMaxSatExperiment(25, 0, 4.27f, iSEED_NO_MASK);
 
 	//vRunNearestNeighborNKExperiment(100, 0, 4, i_mask_seed);
