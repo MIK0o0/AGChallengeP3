@@ -93,19 +93,20 @@ double Triangle::entropy(const vector<int>* c) {
 	return retValue;
 }
 double Triangle::entropyMap(const vector<int>* c) {
-	//const vector<int>* ptrRow = frequenciesTable->data();
+	const vector<int>* ptrRow = frequenciesTable->data();
 	double retValue = 0;
 	for (pair<int,unordered_map<int,int>> pi: MapCi)
 	{
 		bool flag = true;
+		const int* ptrKolumnPi = (ptrRow + pi.first)->data();
 		for (pair<int,unordered_map<int,int>> pj:MapCj)
 		{
 			if (flag)
 			{
-				pj.second[(*frequenciesTable)[pj.first][pi.first]]++;
+				pj.second[(*(ptrRow+pj.first))[pi.first]]++;
 				flag = false;
 			}
-			pi.second[(*frequenciesTable)[pi.first][pj.first]]++;
+			pi.second[*(ptrKolumnPi + pj.first)]++;
 		}
 		for (std::pair<const int, int> p : pi.second)
 		{

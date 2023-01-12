@@ -22,7 +22,6 @@ Pyramid::~Pyramid() {
         populations.at(i).deleteDynamicVect();
         delete populations.at(i).population;
     }
-    //cout << "tu krzycze" << endl;
     populations.clear();
     allSolutions.clear();
     currentVectBest.clear();
@@ -112,6 +111,7 @@ void Pyramid::iteration() {
                 {
                     currentVectBest = crossSolution;
                     currentFitnessBest = crossFitness;
+                    cout << "Cross solution gurom" << endl;
                 }
                 if ((i + 1) >= populations.size())
                 {
