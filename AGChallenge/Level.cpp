@@ -150,10 +150,8 @@ void Level::createClusters() {
 		distanceVect.pop_back();
 		
 		if (minDistance == 0 && !clusters.empty()) {
-			cout << "before erase" << endl;
 			clusters.erase(clusters.begin() + findidex(clusters, *(minTriangle->ci)));
 			clusters.erase(clusters.begin() + findidex(clusters, *(minTriangle->cj)));
-			cout << "after erase" << endl;
 		}
 
 		useful[min_i] = false;
@@ -200,14 +198,6 @@ void Level::createClusters() {
 			delete (ptrMatrix + min_j)->at(i);
 		}
 		(ptrMatrix + min_j)->clear();
-		/*
-		for (size_t i = 0; i < matrix.size(); i++)
-		{
-			matrix.at(i).erase(remove_if(matrix.at(i).begin(), matrix.at(i).end(), [min_i, min_j](Triangle* a) {
-				return (a->ciIndex == min_i || a->ciIndex == min_j || a->cjIndex == min_i || a->cjIndex == min_j);
-				}), matrix.at(i).end());
-		}
-		*/
 	}
 	
 	sort(clusters.begin(), clusters.end(), [](const vector<int>* a, const vector<int>* b) {

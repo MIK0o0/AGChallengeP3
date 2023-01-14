@@ -6,7 +6,7 @@
 using namespace std;
 Pyramid::Pyramid(int N, CEvaluator& cEvaluator):nrBits(N),c_evaluator(cEvaluator),populations() {
     currentFitnessBest = -DBL_MAX;
-    populations.emplace_back(nrBits,cEvaluator);
+    populations.emplace_back(nrBits,cEvaluator); //wstawienie poziomu 0
     random_device c_seed_generator;
     c_rand_engine.seed(c_seed_generator());
     nrOfGenerations = 0;
@@ -29,11 +29,11 @@ Pyramid::~Pyramid() {
 void Pyramid::v_fill_randomly(vector<int>& vSolution)
 {
 	uniform_int_distribution<int> c_uniform_int_distribution(iBIT_FALSE, iBIT_TRUE);
-	vSolution.resize((size_t)nrBits);
+	vSolution.reserve((size_t)nrBits);
 
-	for (size_t i = 0; i < vSolution.size(); i++)
+	for (size_t i = 0; i < nrBits; i++)
 	{
-		vSolution.at(i) = c_uniform_int_distribution(c_rand_engine);
+		vSolution.push_back(c_uniform_int_distribution(c_rand_engine));
 	}
 }
 void Pyramid::hillClimber(vector<int>& solution) {
@@ -44,17 +44,18 @@ void Pyramid::hillClimber(vector<int>& solution) {
     bool improvement;
 
     std::unordered_set<int> tried;
+    random_device rd;
+    
 
     do {
         improvement = false;
-        random_device rd;
         mt19937 g(rd());
         shuffle(options.begin(), options.end(), g);
         for (const int index : options) {
             
             if (tried.count(index) == 0) {
                 
-                solution.at(index) = (solution.at(index)==1) ? 0:1;
+                solution[index] = (solution[index] ==1) ? 0:1;
                 newFitness = c_evaluator.dEvaluate(solution);
                 if (currentFitness < newFitness) {
                     
@@ -63,7 +64,7 @@ void Pyramid::hillClimber(vector<int>& solution) {
                     tried.clear();
                 }
                 else {
-                    solution.at(index) = (solution.at(index) == 1) ? 0 : 1;
+                    solution[index] = (solution[index] == 1) ? 0 : 1;
                 }
                 tried.insert(index);
             } 
@@ -71,23 +72,18 @@ void Pyramid::hillClimber(vector<int>& solution) {
     } while (improvement);
 }
 void Pyramid::iteration() {
-    //cout << "populations size : " << populations.size() << endl;
-    //for (size_t i = 0; i < populations.size(); i++)
-    //{
-        //cout <<"Liczba osobników na poziomie :"<<i<<" : " << populations.at(i).population->size() << endl;
-    //}
     nrOfGenerations++;
     vector<int> solution;
-    bool unicat = false;
+    bool unique = false;
     if (currentFitnessBest<1)
     {
-        while (!unicat)
+        while (!unique)
         {
             v_fill_randomly(solution);
 
             hillClimber(solution);
 
-            unicat = (allSolutions.count(solution) == 0);
+            unique = (allSolutions.count(solution) == 0);
         }
         cout << "after unicat" << endl;
         allSolutions.insert(solution);
@@ -103,7 +99,7 @@ void Pyramid::iteration() {
         int popSize = populations.size();
         for (int i = 0; i < popSize; i++) {
             vector<int> crossSolution = populations.at(i).cross(solution);
-            //cout << "after cross" << endl;
+            
             double crossFitness = c_evaluator.dEvaluate(crossSolution);
             if (fitness < crossFitness && allSolutions.count(crossSolution) == 0)
             {
@@ -111,14 +107,11 @@ void Pyramid::iteration() {
                 {
                     currentVectBest = crossSolution;
                     currentFitnessBest = crossFitness;
-                    cout << "Cross solution gurom" << endl;
                 }
                 if ((i + 1) >= populations.size())
                 {
-                    //cout << "Dodaje nowy poziom" << endl;
                     populations.emplace_back(nrBits, c_evaluator);
                 }
-                //cout << "Przed dodaniem crossSolution do nowego poziomu" << endl;
                 populations.at(i + 1).addSolution(crossSolution);
                 allSolutions.insert(crossSolution);
             }
@@ -126,9 +119,6 @@ void Pyramid::iteration() {
 
         }
     }
-    
-    
-
 }
 void Pyramid::printVect(const vector<int>& v) {
     cout << "\n";

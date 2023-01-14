@@ -1,4 +1,6 @@
 #pragma once
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
 #include <iostream>
 #include <vector>
 #include "Evaluator.h"
@@ -21,8 +23,6 @@ private:
 	void printVect(const vector<int>& v);
 	void updateFreq(const vector<int>& solution);
 	void createClusters();
-	double distanceCalculate(const vector<int>* ci, const vector<int>* cj,const vector<int>* cij);
-	double entropy(const vector<int>* cluster);
 	int findidex(const vector<vector<int>*> clu, const vector<int>& v);
 
 	vector<vector<int>*> clusters;

@@ -1,4 +1,6 @@
 #pragma once
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
 #include <vector>
 #include <iostream>
 #include "Level.h"
@@ -27,8 +29,8 @@ public:
 	~Pyramid();
 	
     void iteration();
-    vector<int>& getVect() { return currentVectBest; };
-    double& getDouble() { return currentFitnessBest; };
+    vector<int>& getBestVect() { return currentVectBest; };
+    double getBestFitness() { return currentFitnessBest; };
 
     vector<Level> populations;
     const int nrBits;
@@ -40,7 +42,7 @@ private:
 
     vector<int> currentVectBest;
     double currentFitnessBest;
-    MySet allSolutions;
+    MySet allSolutions;  //hashset wszystkich rozwi¹zañ
     CEvaluator& c_evaluator;
     mt19937 c_rand_engine;
     int nrOfGenerations;

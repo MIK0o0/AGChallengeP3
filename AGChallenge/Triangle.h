@@ -1,4 +1,6 @@
 #pragma once
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
 #include <vector>
 #include <iostream>
 #include "CMySmartPointer.h"
@@ -18,7 +20,7 @@ public:
 		CMySmartPointer< vector<int>>& ncj,double entropyCI,double entropyCJ,vector<pair<int,unordered_map<int,int>>> mapci,
 		vector<pair<int, unordered_map<int, int>>> mapcj, const vector<vector<int>>* freqTab);
 	Triangle(int iIndex, int jIndex, CMySmartPointer< vector<int>>& nci,double entropyCi);
-	~Triangle();
+	
 	int ciIndex;
 	int cjIndex;
 	CMySmartPointer< vector<int>> ci;

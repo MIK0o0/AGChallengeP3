@@ -14,7 +14,7 @@ public:
 private:
 	CRefCounter* pc_counter;
 	T* pc_pointer;
-};//class CMySmartPointer
+};
 
 
 template<typename T>
@@ -38,7 +38,6 @@ CMySmartPointer<T>::~CMySmartPointer()
 	{
 		delete pc_pointer;
 		delete pc_counter;
-		//std::cout << "#";
 	}
 }
 template<typename T>

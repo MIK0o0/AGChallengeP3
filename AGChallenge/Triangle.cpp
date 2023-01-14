@@ -8,8 +8,8 @@ Triangle::Triangle(int iIndex, int jIndex, CMySmartPointer< vector<int>>& nci,
 	ciIndex = iIndex;
 	cjIndex = jIndex;
 	frequenciesTable = freqTab;
+
 	//tworzenie po³¹czonego zbioru
-	//std::cout << "Laczê i liczê" << std::endl;
 	cij->insert(cij->end(), ci->begin(), ci->end());
 	cij->insert(cij->end(), cj->begin(), cj->end());
 
@@ -34,12 +34,11 @@ Triangle::Triangle(int iIndex, int jIndex, CMySmartPointer< vector<int>>& nci,
 	ciIndex = iIndex;
 	cjIndex = jIndex;
 	frequenciesTable = freqTab;
-	//tworzenie po³¹czonego zbioru
-	//std::cout << "Lacze" << std::endl;
+
+	//tworzenie po³¹czonego zbioru	
 	cij->insert(cij->end(), ci->begin(), ci->end());
 	cij->insert(cij->end(), cj->begin(), cj->end());
 
-	//std::cout << "licze" << std::endl;
 	entropyCi = entropyCI;
 	entropyCj = entropyCJ;
 	entropyCij = entropyMap(cij.getPtr());
@@ -56,9 +55,6 @@ Triangle::Triangle(int iIndex, int jIndex, CMySmartPointer< vector<int>>& nci,do
 	frequenciesTable = NULL;
 }
 
-Triangle::~Triangle()
-{
-}
 double Triangle::distanceCalculate() {
 	double retValue = 0;
 

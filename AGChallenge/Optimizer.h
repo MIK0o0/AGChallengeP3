@@ -12,6 +12,7 @@ class COptimizer
 {
 public:
 	COptimizer(CEvaluator &cEvaluator);
+	~COptimizer();
 
 	void vInitialize();
 	void vRunIteration();
@@ -19,9 +20,10 @@ public:
 	vector<int> *pvGetCurrentBest() { return &v_current_best; }
 
 private:
-	Pyramid pyramid;
 
 	CEvaluator &c_evaluator;
+	Pyramid* pyramid;
+
 
 	double d_current_best_fitness;
 	vector<int> v_current_best;

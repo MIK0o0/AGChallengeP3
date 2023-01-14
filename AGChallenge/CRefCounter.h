@@ -8,4 +8,4 @@ public:
 	int iGet() { return(i_count); }
 private:
 	int i_count;
-};//class CRefCounter
+};
