@@ -1,12 +1,10 @@
 #pragma once
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
+
 #include <vector>
 #include <iostream>
 #include "CMySmartPointer.h"
 #include <vector>
 #include <unordered_map>
-
 
 using std::vector;
 using std::pair;

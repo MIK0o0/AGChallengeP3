@@ -36,6 +36,7 @@ void Level::deleteDynamicVect() {
 	}
 	clusters.clear();
 }
+
 void Level::updateFreq(const vector<int>& solution) {
 	const int* ptrSolution = solution.data();
 	vector<int>* ptrRow = frequenciesTable->data();
@@ -206,7 +207,7 @@ void Level::createClusters() {
 
 	for (size_t i = 0; i < matrix.size(); i++)
 	{
-		for (size_t j = i + 1; j < matrix.at(0).size(); j++) {
+		for (size_t j = 0 ; j < matrix.at(i).size(); j++) {
 			delete matrix.at(i).at(j);
 		}
 		matrix.at(i).clear();
@@ -215,6 +216,7 @@ void Level::createClusters() {
 	useful.clear();
 	distanceVect.clear();
 
+	delete clusters.back();
 	clusters.pop_back();
 }
 void Level::printVect(const vector<int>& v) {

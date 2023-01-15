@@ -1,6 +1,5 @@
 #pragma once
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
+
 #include <vector>
 #include <iostream>
 #include "Level.h"
@@ -8,6 +7,7 @@
 #include "Evaluator.h"
 
 #include <random>
+
 
 struct VectorHash {
     size_t operator()(const std::vector<int>& v) const {

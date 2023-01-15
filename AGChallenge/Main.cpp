@@ -1,4 +1,9 @@
-#define _CRTDBG_MAP_ALLOC
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
+//
+//
+
 #include "Evaluator.h"
 #include "Optimizer.h"
 #include "Timer.h"
@@ -6,13 +11,13 @@
 #include <exception>
 #include <iostream>
 #include <random>
-#include <crtdbg.h>
+
 
 using namespace TimeCounters;
 
 using namespace std;
 
-#define dMAX_TIME  15
+#define dMAX_TIME  20*60
 
 
 void vRunExperiment(CEvaluator &cConfiguredEvaluator)
@@ -107,7 +112,7 @@ void vRunRastriginExperiment(int iNumberOfBits, int iBitsPerFloat, int iMaskSeed
 
 void main(int iArgCount, char **ppcArgValues)
 {
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	random_device c_mask_seed_generator;
 	int i_mask_seed = (int)c_mask_seed_generator();
 
@@ -117,7 +122,7 @@ void main(int iArgCount, char **ppcArgValues)
 	//vRunLeadingOnesExperiment(300, i_mask_seed);
 	//vRunLeadingOnesExperiment(50, iSEED_NO_MASK);
 
-	vRunMaxSatExperiment(200, 0, 4.27f, i_mask_seed);
+	vRunMaxSatExperiment(800, 0, 4.27f, i_mask_seed);
 	//vRunMaxSatExperiment(25, 0, 4.27f, iSEED_NO_MASK);
 
 	//vRunNearestNeighborNKExperiment(100, 0, 4, i_mask_seed);
@@ -128,5 +133,5 @@ void main(int iArgCount, char **ppcArgValues)
 
 	//vRunRastriginExperiment(1000, 10, i_mask_seed);
 	//vRunRastriginExperiment(200, 10, iSEED_NO_MASK);
-	_CrtDumpMemoryLeaks();
+	//_CrtDumpMemoryLeaks();
 }//void main(int iArgCount, char **ppcArgValues)
