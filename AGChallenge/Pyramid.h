@@ -45,6 +45,5 @@ private:
     MySet allSolutions;  //hashset wszystkich rozwi¹zañ
     CEvaluator& c_evaluator;
     mt19937 c_rand_engine;
-    int nrOfGenerations;
 };
 

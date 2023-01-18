@@ -70,7 +70,8 @@ vector<int> Level::cross(vector<int>& solution) {
 		int* ptrSolution = solution.data();
 		const int* ptrDonor = donor.data();
 		
-		for (int i =0 ;i<cluster->size();i++)
+		bool flagBreak = true;
+		for (int i =0 ;i<cluster->size() && flagBreak;i++)
 		{
 			copySolution.push_back(*(ptrSolution + (*(ptrCluster + i))));
 			(*(ptrSolution + (*(ptrCluster + i)))) = (*(ptrDonor + (*(ptrCluster + i))));
@@ -80,7 +81,7 @@ vector<int> Level::cross(vector<int>& solution) {
 					(*(ptrSolution + (*(ptrCluster + r)))) = copySolution.back();
 					copySolution.pop_back();
 				}
-				break;
+				flagBreak = false;
 			}
 		}
 	}

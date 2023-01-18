@@ -1,9 +1,3 @@
-//#define _CRTDBG_MAP_ALLOC
-//#include <stdlib.h>
-//#include <crtdbg.h>
-//
-//
-
 #include "Evaluator.h"
 #include "Optimizer.h"
 #include "Timer.h"
@@ -12,15 +6,14 @@
 #include <iostream>
 #include <random>
 
-
 using namespace TimeCounters;
 
 using namespace std;
 
-#define dMAX_TIME  20*60
+#define dMAX_TIME 20 * 60
 
 
-void vRunExperiment(CEvaluator &cConfiguredEvaluator)
+void vRunExperiment(CEvaluator& cConfiguredEvaluator)
 {
 	try
 	{
@@ -44,7 +37,7 @@ void vRunExperiment(CEvaluator &cConfiguredEvaluator)
 			c_time_counter.bGetTimePassed(&d_time_passed);
 		}//while (d_time_passed <= MAX_TIME)
 	}//try
-	catch (exception &c_exception)
+	catch (exception& c_exception)
 	{
 		cout << c_exception.what() << endl;
 	}//catch (exception &c_exception)
@@ -110,28 +103,26 @@ void vRunRastriginExperiment(int iNumberOfBits, int iBitsPerFloat, int iMaskSeed
 	}//if (c_rastrigin.bConfigure(iNumberOfBits, iBitsPerFloat, iMaskSeed) == true)
 }//void vRunRastriginExperiment(int iNumberOfBits, int iBitsPerFloat, int iMaskSeed)
 
-void main(int iArgCount, char **ppcArgValues)
+void main(int iArgCount, char** ppcArgValues)
 {
-	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	random_device c_mask_seed_generator;
 	int i_mask_seed = (int)c_mask_seed_generator();
 
-	//vRunIsingSpinGlassExperiment(784, 0, i_mask_seed);
-	//vRunIsingSpinGlassExperiment(81, 0, iSEED_NO_MASK);
+	vRunIsingSpinGlassExperiment(81, 0, i_mask_seed);
+	vRunIsingSpinGlassExperiment(81, 0, iSEED_NO_MASK);
 
-	//vRunLeadingOnesExperiment(300, i_mask_seed);
-	//vRunLeadingOnesExperiment(50, iSEED_NO_MASK);
+	vRunLeadingOnesExperiment(50, i_mask_seed);
+	vRunLeadingOnesExperiment(50, iSEED_NO_MASK);
 
-	vRunMaxSatExperiment(800, 0, 4.27f, i_mask_seed);
-	//vRunMaxSatExperiment(25, 0, 4.27f, iSEED_NO_MASK);
+	vRunMaxSatExperiment(25, 0, 4.27f, i_mask_seed);
+	vRunMaxSatExperiment(25, 0, 4.27f, iSEED_NO_MASK);
 
-	//vRunNearestNeighborNKExperiment(100, 0, 4, i_mask_seed);
-	//vRunNearestNeighborNKExperiment(100, 0, 4, iSEED_NO_MASK);
+	vRunNearestNeighborNKExperiment(100, 0, 4, i_mask_seed);
+	vRunNearestNeighborNKExperiment(100, 0, 4, iSEED_NO_MASK);
 
-	//vRunOneMaxExperiment(100, i_mask_seed);
-	//vRunOneMaxExperiment(100, iSEED_NO_MASK);
+	vRunOneMaxExperiment(100, i_mask_seed);
+	vRunOneMaxExperiment(100, iSEED_NO_MASK);
 
-	//vRunRastriginExperiment(1000, 10, i_mask_seed);
-	//vRunRastriginExperiment(200, 10, iSEED_NO_MASK);
-	//_CrtDumpMemoryLeaks();
+	vRunRastriginExperiment(200, 10, i_mask_seed);
+	vRunRastriginExperiment(200, 10, iSEED_NO_MASK);
 }//void main(int iArgCount, char **ppcArgValues)

@@ -24,8 +24,6 @@ void COptimizer::vInitialize()
 	pyramid = new Pyramid(c_evaluator.iGetNumberOfBits(), c_evaluator);
 	d_current_best_fitness = -DBL_MAX;
 	v_current_best.clear();
-
-	cout << "\nNOWY#############################################################" << endl;
 }//void COptimizer::vInitialize()
 
 void COptimizer::vRunIteration()
@@ -37,8 +35,6 @@ void COptimizer::vRunIteration()
 	{
 		v_current_best = pyramid->getBestVect();
 		d_current_best_fitness = pyramid->getBestFitness();
-
-		cout <<"current best fitness: " << d_current_best_fitness << "\n" << endl;
 	}//if (d_candidate_fitness > d_current_best_fitness)
 }//void COptimizer::vRunIteration()
 

@@ -9,11 +9,8 @@ Pyramid::Pyramid(int N, CEvaluator& cEvaluator):nrBits(N),c_evaluator(cEvaluator
     populations.emplace_back(nrBits,cEvaluator); //wstawienie poziomu 0
     random_device c_seed_generator;
     c_rand_engine.seed(c_seed_generator());
-    nrOfGenerations = 0;
 }
 Pyramid::~Pyramid() {
-    
-    cout <<"Number of iterations : " << nrOfGenerations << endl;
     cout << "Best fitness : " << currentFitnessBest << endl;
     cout << "Best solution : " ;
     printVect(currentVectBest);
@@ -72,7 +69,6 @@ void Pyramid::hillClimber(vector<int>& solution) {
     } while (improvement);
 }
 void Pyramid::iteration() {
-    nrOfGenerations++;
     vector<int> solution;
     bool unique = false;
     if (currentFitnessBest<1)
@@ -85,7 +81,6 @@ void Pyramid::iteration() {
 
             unique = (allSolutions.count(solution) == 0);
         }
-        cout << "after unicat" << endl;
         allSolutions.insert(solution);
         
         populations.at(0).addSolution(solution);
