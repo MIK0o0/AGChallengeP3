@@ -2,10 +2,23 @@
 #include <unordered_map>
 #include <numeric>
 #include <algorithm>
+#include "Triangle.h"
+#include "CMySmartPointer.h"
+using std::tuple;
 
-Level::Level(int N, CEvaluator& cEvaluator):nrBits(N), frequenciesTable(N,vector<int>(N,0)), c_evaluator(cEvaluator){
+Level::Level(int N, CEvaluator& cEvaluator):nrBits(N), c_evaluator(cEvaluator) {
+	frequenciesTable = new vector<vector<int>>(nrBits, vector<int>(nrBits, 0));
+	population = new vector<vector<int>>;
+	
 	random_device c_seed_generator;
 	c_rand_engine.seed(c_seed_generator());
+}
+Level::Level(const Level& pcOther) :nrBits(pcOther.nrBits), c_evaluator(pcOther.c_evaluator) {
+	frequenciesTable = pcOther.frequenciesTable;
+	population = pcOther.population;
+	random_device c_seed_generator;
+	c_rand_engine.seed(c_seed_generator());
+
 }
 Level::~Level() {
 	vector<int>** c = clusters.data();
@@ -13,14 +26,21 @@ Level::~Level() {
 	{
 		delete *(c + i);
 	}
-	//delete c;
-	population.clear();
 	clusters.clear();
-	frequenciesTable.clear();
 }
+void Level::deleteDynamicVect() {
+	delete frequenciesTable;
+	for (size_t i = 0; i < clusters.size(); i++)
+	{
+		delete clusters.at(i);
+	}
+	clusters.clear();
+}
+
 void Level::updateFreq(const vector<int>& solution) {
 	const int* ptrSolution = solution.data();
-	vector<int>* ptrRow = frequenciesTable.data();
+	vector<int>* ptrRow = frequenciesTable->data();
+	
 	for (int i = 0; i < nrBits; i++)
 	{
 		int* ptrKolumn = (ptrRow + i)->data();
@@ -31,28 +51,18 @@ void Level::updateFreq(const vector<int>& solution) {
 }
 void Level::addSolution(vector<int>& solution) {
 	
-	population.push_back(solution);
-	
+	population->push_back(solution);
 	updateFreq(solution);
-
 	createClusters();
-	cout << "after creating cluster" << endl;
 	
 }
 vector<int> Level::cross(vector<int>& solution) {
-	/*
-	vector<int> options(nrBits);
-	iota(options.begin(), options.end(), 0);
-	random_device rd;
-	mt19937 g(rd());
-	shuffle(options.begin(), options.end(), g);
-	//cout << "shuffle end" << endl;*/
 	
-	uniform_int_distribution<int> index(0, population.size()-1);
+	uniform_int_distribution<int> index(0, population->size()-1);
 
 	for (vector<int>* cluster : clusters)
 	{	
-		vector<int>& donor = population.at(index(c_rand_engine));
+		vector<int>& donor = population->at(index(c_rand_engine));
 		vector<int> copySolution;
 		double fitness = c_evaluator.dEvaluate(solution);
 
@@ -60,7 +70,8 @@ vector<int> Level::cross(vector<int>& solution) {
 		int* ptrSolution = solution.data();
 		const int* ptrDonor = donor.data();
 		
-		for (int i =0 ;i<cluster->size();i++)
+		bool flagBreak = true;
+		for (int i =0 ;i<cluster->size() && flagBreak;i++)
 		{
 			copySolution.push_back(*(ptrSolution + (*(ptrCluster + i))));
 			(*(ptrSolution + (*(ptrCluster + i)))) = (*(ptrDonor + (*(ptrCluster + i))));
@@ -70,7 +81,7 @@ vector<int> Level::cross(vector<int>& solution) {
 					(*(ptrSolution + (*(ptrCluster + r)))) = copySolution.back();
 					copySolution.pop_back();
 				}
-				break;
+				flagBreak = false;
 			}
 		}
 	}
@@ -78,124 +89,136 @@ vector<int> Level::cross(vector<int>& solution) {
 	return solution;
 }
 void Level::createClusters() {
-	vector<int>** c = clusters.data();
+	
+	vector<int>** c = clusters.data();					//usuwamy stare clustery
 	for (size_t i = 0; i < clusters.size(); i++)
 	{
 		delete *(c + i);
 	}
-	//delete c;
 	clusters.clear();
-	vector<vector<int>*> unmerged;
-	
-	
+
 	for (int i = 0; i < nrBits; ++i) {
-		unmerged.push_back(new vector<int>{ i });
-		clusters.push_back(new vector<int> {i});
-	}
-
-	while (unmerged.size()>1)
-	{
-		double minDistance = DBL_MAX;
-		int min_i = -1;
-		int min_j = -1;
-		vector<int>** indexUnmerged = unmerged.data();
-		vector<int> min_cij;
-		for (int i = 0; i < unmerged.size(); i++)
-		{
-			for (int j = i+1; j < unmerged.size(); j++)
-			{
-				//cout << "i = " << i << "; j = " << j << endl;
-				//printVect(unmerged.at(i));
-				// 
-				vector<int>* cij = new vector<int>;
-				(*cij).insert((*cij).end(), (*(*(indexUnmerged + i))).begin(), (*(*(indexUnmerged + i))).end());
-				(*cij).insert((*cij).end(), (*(*(indexUnmerged + j))).begin(), (*(*(indexUnmerged + j))).end());
-				//cout << "unmerged.size = " << unmerged.size() << endl;
-				double distance = distanceCalculate(*(indexUnmerged + i), *(indexUnmerged + j),cij);
-				//cout << distance << endl;
-				if (distance< minDistance)
-				{
-					minDistance = distance;
-					min_i = i;
-					min_j = j;
-					min_cij = *cij;
-				}
-				delete cij;
-			}
-		}
-		//cout << min_i << " ; " << min_j << endl;
-		if (min_i >=0 && min_j >=0)
-		{
-			if (minDistance == 0 && !clusters.empty()) {
-
-				clusters.erase(clusters.begin()+findidex(clusters, (*(*(indexUnmerged + min_i)))));
-				clusters.erase(clusters.begin() + findidex(clusters, (*(*(indexUnmerged + min_j)))));
-			}
-
-			unmerged.erase(unmerged.begin() + min_j);
-			unmerged.erase(unmerged.begin() + min_i);
-			unmerged.push_back(new vector<int> (min_cij));
-			clusters.push_back(new vector<int>(min_cij));
-		}
-		min_cij.clear();
-		
+		clusters.push_back(new vector<int>{ i });
 	}
 	
+	vector<vector<Triangle*>> matrix;		//tworzymy macierz wskaŸników trójk¹tów
+	matrix.reserve(nrBits * 2);
+	
+	vector<bool> useful;					//vector u¿ytecznych indexów
+	
+	int counter = 0;						//liczniik ile jest unmerged klastrów
+	
+	vector<tuple<double,int ,int , Triangle*>> distanceVect;		// wektor pary dystansu ze wskaŸnikiem
+	vector < CMySmartPointer<vector<int>>> allClusters;				//wektor wszystkich clustrów
+	allClusters.reserve(nrBits * 2);
+
+	vector<vector<pair<int, unordered_map<int, int>>>> allMaps;		//vector wszystkich mo¿liwych konfiguracji clustrow
+	allMaps.reserve(nrBits * 2);
+
+	for (int i = 0; i < nrBits; ++i) {				//wype³niamy macierz pocz¹tkowymi wartoœciami (pojedyñczymi clustrami)
+		
+		useful.push_back(true);
+		counter++;
+		matrix.push_back({});
+
+		allClusters.push_back(CMySmartPointer<vector<int>>(new vector<int>{ i }));
+		allMaps.push_back({ pair<int, unordered_map< int, int>>(i, {}) });
+		allMaps.back().back().second[(*frequenciesTable)[i][i]]++;
+		for (int j = i; j < nrBits; j++)
+		{	
+			matrix[i].push_back(new Triangle(i, j, allClusters.at(i),
+					CMySmartPointer<vector<int>>(new vector<int>{ j }), frequenciesTable));
+			distanceVect.push_back(tuple<double,int,int, Triangle*>((matrix[i].back())->distance,i,j, matrix[i].back()));
+		}
+	}
+	
+	int indexAdd = matrix.size()-1;
+	
+	while (counter>1)
+	{
+		double minDistance;
+		int min_i;
+		int min_j;
+		Triangle* minTriangle;
+		
+		sort(distanceVect.begin(), distanceVect.end(), [](const tuple<double,int,int, Triangle*> a, const tuple<double, int, int, Triangle*> b) {
+			return get<0>(a) > get<0>(b);
+			});
+
+		minDistance =get<0>( distanceVect.back());
+		minTriangle = get<3>(distanceVect.back());
+		min_i = minTriangle->ciIndex;
+		min_j = minTriangle->cjIndex;
+		distanceVect.pop_back();
+		
+		if (minDistance == 0 && !clusters.empty()) {
+			clusters.erase(clusters.begin() + findidex(clusters, *(minTriangle->ci)));
+			clusters.erase(clusters.begin() + findidex(clusters, *(minTriangle->cj)));
+		}
+
+		useful[min_i] = false;
+		counter--;
+		useful[min_j] = false;
+		counter--;
+		useful.push_back(true);
+		distanceVect.erase(remove_if(distanceVect.begin(), distanceVect.end(), [min_i,min_j](tuple<double, int, int, Triangle*> a) {
+			return ((get<1>(a) == min_i) || (get<1>(a) == min_j) || (get<2>(a) == min_i) || (get<2>(a) == min_j));
+			}),distanceVect.end());
+		counter++;
+		
+		allClusters.push_back(minTriangle->cij);
+		allMaps.push_back(minTriangle->MapCi);
+		indexAdd++;
+
+		matrix.push_back({});
+
+		matrix.back().push_back(new Triangle(matrix.size()-1, matrix.size() - 1, minTriangle->cij,minTriangle->entropyCij));
+		
+		int mSize = matrix.size();
+		
+		vector<Triangle*>* ptrMatrix = matrix.data();
+		for (int i = 0;i<mSize-1;i++)
+		{
+			if (useful.at(i))
+			{
+				
+				(ptrMatrix + i)->push_back(new Triangle(i, indexAdd,allClusters.at(i), minTriangle->cij,
+					((ptrMatrix + i)->back())->entropyCi, minTriangle->entropyCij,allMaps.at(i),allMaps.at(i), frequenciesTable));
+				distanceVect.push_back(tuple<double,int,int,Triangle*>((ptrMatrix + i)->back()->distance,i,mSize-1, (ptrMatrix + i)->back()));
+				
+			}
+		}
+		clusters.push_back(new vector<int>(*(minTriangle->cij)));
+		ptrMatrix = matrix.data();
+		for (size_t i = 0; i < (ptrMatrix+min_i)->size(); i++)
+		{
+			delete (ptrMatrix + min_i)->at(i);
+		}
+		(ptrMatrix + min_i)->clear();
+		for (size_t i = 0; i < (ptrMatrix + min_j)->size(); i++)
+		{
+			delete (ptrMatrix + min_j)->at(i);
+		}
+		(ptrMatrix + min_j)->clear();
+	}
 	
 	sort(clusters.begin(), clusters.end(), [](const vector<int>* a, const vector<int>* b) {
 		return (*a).size() < (*b).size();
 		});
 
-	
-	clusters.pop_back();
-	
-	//delete unmerge:
-	vector<int>** u = unmerged.data();
-	for (size_t i = 0; i < unmerged.size(); i++)
+	for (size_t i = 0; i < matrix.size(); i++)
 	{
-		delete* (u + i);
-	}
-	//delete u;
-	unmerged.clear();
-}
-double Level::distanceCalculate(const vector<int>* ci, const vector<int>* cj, const vector<int>* cij) {
-	double retValue = 0;
-	//printVect(ci);
-	//printVect(cj);
-	//cout  << endl;
-	
-			int divideNumber = entropy(cij);
-			if (divideNumber == 0)
-			{
-				retValue += 2;
-			}
-			else {
-				retValue += (2 - ((entropy(ci) + entropy(cj)) / divideNumber));
-			}
-		
-	//cout << "distance calulate end " << endl;
-	return retValue;
-}
-double Level::entropy(const vector<int>* c) {
-	double retValue = 0;
-	vector<int>* ptrRow = frequenciesTable.data();
-	for (int i : *c)
-	{
-		std::unordered_map<int, int> valueCounts;
-		int* ptrKolumn = (ptrRow + i)->data();
-		for (int j : *c) {
-			valueCounts[*(ptrKolumn + j)]++;
+		for (size_t j = 0 ; j < matrix.at(i).size(); j++) {
+			delete matrix.at(i).at(j);
 		}
-		for (  std::pair<const int,int> p : valueCounts)
-		{
-			double probability = (double)(p.second) / (double)(*c).size();
-			retValue -= probability * log2(probability);
-		}
+		matrix.at(i).clear();
 	}
-	
+	matrix.clear();
+	useful.clear();
+	distanceVect.clear();
 
-	//cout << retValue << endl;
-	return retValue;
+	delete clusters.back();
+	clusters.pop_back();
 }
 void Level::printVect(const vector<int>& v) {
 	cout << "\n";

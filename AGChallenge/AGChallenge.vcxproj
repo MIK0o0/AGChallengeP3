@@ -155,7 +155,9 @@
     <ClCompile Include="Util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CMySmartPointer.h" />
     <ClInclude Include="Configuration.h" />
+    <ClInclude Include="CRefCounter.h" />
     <ClInclude Include="Evaluation.h" />
     <ClInclude Include="Evaluator.h" />
     <ClInclude Include="Level.h" />
@@ -164,6 +166,11 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="Util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="IsingSpinGlass_pm_529_81.txt" />
+    <Text Include="IsingSpinGlass_pm_784_0.txt" />
+    <Text Include="IsingSpinGlass_pm_81_0.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
